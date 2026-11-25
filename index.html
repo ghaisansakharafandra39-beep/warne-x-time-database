@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADD TOKEN WARNE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f4f4f6;
+      --card-bg: #ffffff;
+      --primary-yellow: #ffd600;
+      --text-dark: #111111;
+      --text-muted: #777777;
+      --border-color: #111111;
+      --border-radius: 16px;
+      --red-color: #ff3b3b;
+      --neon-pink: #ff2d95;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-dark); display: flex; justify-content: center; padding: 15px; padding-bottom: 40px; min-height: 100vh; }
+    
+    .app-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ===== VIDEO SCREEN ===== */
+    .video-screen {
+      width: 100%;
+      height: 260px;
+      background: #000;
+      border: 3px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-shadow: 3px 3px 0px var(--border-color), 0 0 18px rgba(0,229,255,0.35);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .video-screen video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #000;
+      pointer-events: none;
+    }
+    .video-screen::after {
+      content: '● REC';
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--neon-pink);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-shadow: 0 0 8px var(--neon-pink);
+      animation: blink 1.2s infinite;
+      pointer-events: none;
+    }
+    .video-screen .scanline {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    /* Overlay play */
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.35);
+      z-index: 3;
+      transition: opacity 0.3s;
+    }
+    .play-overlay.hidden { opacity: 0; pointer-events: none; }
+    .play-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--primary-yellow);
+      border: 3px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      box-shadow: 3px 3px 0 var(--border-color);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    /* ===== LOGIN CARD ===== */
+    .card { background: var(--card-bg); border: 3px solid var(--border-color); border-radius: var(--border-radius); padding: 22px 20px; box-shadow: 3px 3px 0px var(--border-color); }
+    .card h2 { font-size: 18px; margin-bottom: 6px; text-align: center; }
+    .card .sub { font-size: 11px; text-align: center; color: var(--text-muted); margin-bottom: 16px; }
+
+    input { width: 100%; padding: 13px 15px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 600; outline: none; background: #f9f9f9; margin-bottom: 12px; font-family: 'Space Grotesk'; }
+    button.btn-submit { background: var(--primary-yellow); border: 2px solid var(--border-color); border-radius: 10px; padding: 13px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 2px 2px 0 var(--border-color); width: 100%; transition: 0.15s; }
+    button.btn-submit:active { box-shadow: 0px 0px 0px var(--border-color); transform: translate(2px, 2px); }
+    
+    .status { margin-top: 14px; padding: 13px; background: #f9f9f9; border: 2px solid var(--border-color); border-radius: 10px; font-size: 12px; text-align: left; word-break: break-all; color: var(--text-dark); font-weight: 600; }
+
+    /* ===== TOKEN LIST ===== */
+    .token-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff; border: 2px solid var(--border-color); padding: 10px 12px; border-radius: 10px; margin-top: 8px; font-size: 12px; word-break: break-all; font-weight: 600; }
+    .token-item span { flex: 1; text-align: left; }
+    .num { background: var(--primary-yellow); color: var(--border-color); font-weight: 700; min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; font-size: 13px; border: 2px solid var(--border-color); }
+    .btn-small { width: auto; padding: 5px 10px; font-size: 11px; margin: 0; background: var(--red-color); color: white; border: 2px solid var(--border-color); border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0 var(--border-color); }
+    .btn-small:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--border-color); }
+
+    /* ===== FOOTER ===== */
+    .footer-text { text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-top: 4px; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- VIDEO + SUARA -->
+    <div class="video-screen" id="videoScreen" onclick="putarVideoDenganSuara()">
+        <video id="warneVideo" src="https://www.image2url.com/r2/default/videos/1795311525703-6d371e4a-b8a1-490d-85cb-916d318705f7.mp4" autoplay loop muted playsinline preload="auto"></video>
+        <div class="scanline"></div>
+        <div class="play-overlay" id="playOverlay">
+            <div class="play-btn">🔊</div>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="card" id="passwordBox">
+        <h2>HALAMAN LOGIN</h2>
+        <p class="sub">Masukkan password untuk mengakses sistem</p>
+        <input type="password" id="passwordInput" placeholder="Masukan password..." onkeydown="if(event.key==='Enter') cekPassword()">
+        <button class="btn-submit" onclick="cekPassword()">MASUK</button>
+        <div class="status" id="statusPassword">Status: Belum login...</div>
+    </div>
+
+    <!-- TOKEN -->
+    <div class="card hidden" id="mainBox">
+        <h2>ADD TOKEN</h2>
+        <input type="text" id="token" placeholder="Input token bot...">
+        <button class="btn-submit" onclick="addToDatabase()">TAMBAHKAN TOKEN</button>
+        <button class="btn-submit" onclick="lihatToken()" style="margin-top:10px;">REFRESH LIST</button>
+        <button class="btn-submit" onclick="logout()" style="margin-top:10px; background:#ffebee; color:var(--red-color); border-color:var(--red-color);">KELUAR</button>
+        
+        <div class="status" id="status">Status: Menunggu input...</div>
+        <div id="listToken"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-text">by@nyalisosmed</div>
+
+</div>
+
+<script>
+    // ==========================================
+    // 0. VIDEO: LANGSUNG JALAN + SUARA SAAT DIPENCET
+    // ==========================================
+    const video = document.getElementById('warneVideo');
+    const overlay = document.getElementById('playOverlay');
+
+    video.muted = true;
+    video.play().catch(() => {});
+
+    function putarVideoDenganSuara() {
+        video.muted = false;
+        video.volume = 1;
+        video.play().catch(() => {});
+        overlay.classList.add('hidden');
+    }
+
+    // ==========================================
+    // 1. LOGIN & TOKEN
+    // ==========================================
+    const GITHUB_TOKEN = "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";
+    const GITHUB_OWNER = "ghaisansakharafandra39-beep";
+    const GITHUB_REPO = "tanzf4an";
+    const FILE_PATH = "tokens.json";
+    const PASSWORD_LIST = ["TANZF4AN"];
+    const BOT_TOKEN_NOTIF = "9162390038:AAHgLLwcNY3S4hoQMBmrNgHKfFu0-sVmaiM";
+    const ADMIN_CHAT_ID = "8997965097";
+
+    let passwordSaya = "";
+    try { passwordSaya = sessionStorage.getItem("passwordLogin") || ""; } catch(e) { passwordSaya = ""; }
+
+    try {
+        if (passwordSaya && PASSWORD_LIST.includes(passwordSaya)) {
+            bukaMain();
+        }
+    } catch(e) {}
+
+    async function githubGet(file) {
+        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${file}`;
+        const res = await fetch(apiUrl, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } });
+        if (!res.ok) return { data: [], sha: null, apiUrl };
+        const json = await res.json();
+        let data = [];
+        try { data = JSON.parse(atob(json.content)); } catch(e) { data = []; }
+        if (!Array.isArray(data)) data = [];
+        return { data, sha: json.sha, apiUrl };
+    }
+
+    async function githubSave(data, sha, apiUrl, msg) {
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+        const res = await fetch(apiUrl, {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg, content, ...(sha ? { sha } : {}) })
+        });
+        return res.ok;
+    }
+
+    async function kirimNotifTelegram(pesan) {
+        if (!BOT_TOKEN_NOTIF || BOT_TOKEN_NOTIF.includes("GANTI_")) return;
+        const url = `https://api.telegram.org/bot${BOT_TOKEN_NOTIF}/sendMessage`;
+        try { 
+            await fetch(url, { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text: pesan, parse_mode: "Markdown" }) 
+            }); 
+        } catch(e) {}
+    }
+
+    function cekPassword() {
+        const pw = document.getElementById("passwordInput").value.trim();
+        const st = document.getElementById("statusPassword");
+        if (!pw) { st.innerText = "❌ Password wajib diisi!"; return; }
+        st.innerText = "⏳ Lagi ngecek password...";
+        
+        if (PASSWORD_LIST.includes(pw)) {
+            passwordSaya = pw;
+            try { sessionStorage.setItem("passwordLogin", pw); } catch(e) {}
+            st.innerText = "✅ Password bener! Lagi masuk...";
+            kirimNotifTelegram(`🔐 *LOGIN BERHASIL*\nPassword: ${pw}`);
+            bukaMain();
+        } else {
+            st.innerText = "❌ Password salah! Lu nggak punya akses.";
+            kirimNotifTelegram(`🚨 *LOGIN GAGAL!*\nPassword: ${pw}`);
+        }
+    }
+
+    function bukaMain() {
+        document.getElementById("passwordBox").classList.add("hidden");
+        document.getElementById("mainBox").classList.remove("hidden");
+        document.getElementById("status").innerText = "Login sebagai: " + passwordSaya;
+        lihatToken();
+    }
+
+    function logout() {
+        try { sessionStorage.removeItem("passwordLogin"); } catch(e) {}
+        passwordSaya = "";
+        document.getElementById("mainBox").classList.add("hidden");
+        document.getElementById("passwordBox").classList.remove("hidden");
+        document.getElementById("passwordInput").value = "";
+        document.getElementById("statusPassword").innerText = "Status: Terkunci lagi...";
+    }
+
+    async function addToDatabase() {
+        const token = document.getElementById("token").value.trim();
+        const status = document.getElementById("status");
+        if (!token) { status.innerText = "❌ Token wajib diisi!"; return; }
+        if (!PASSWORD_LIST.includes(passwordSaya)) { alert("Password udah nggak berlaku!"); logout(); return; }
+        
+        status.innerText = "⏳ Lagi ngirim ke GitHub...";
+        try {
+            const { data, sha, apiUrl } = await githubGet(FILE_PATH);
+            const tokenList = data.map(d => typeof d === "string" ? d : d.token);
+            if (tokenList.includes(token)) { status.innerText = "❌ Token ini udah ada!"; return; }
+            tokenList.push(token);
+            const ok = await githubSave(tokenList, sha, apiUrl, "Add token by " + passwordSaya);
+            
+            if (ok) {
+                status.innerText = "✅ Token berhasil ditambahkan jadi nomer " + tokenList.length;
+                document.getElementById("token").value = "";
+                renderList(tokenList);
+                await kirimNotifTelegram(`✅ *TOKEN DITAMBAHKAN*\n\nToken: \`${token}\`\nTotal: ${tokenList.length} token`);
+            } else {
+                status.innerText = "❌ Gagal menyimpan ke GitHub.";
+            }
+        } catch(e) { status.innerText = "❌ Error: " + e.message; }
+    }
+
+    async function delTokenByIndex(index) {
+        if (!PASSWORD_LIST.includes(passwordSaya)) { alert("Password nggak berlaku!"); logout(); return; }
+        const status = document.getElementById("status");
+        const { data, sha, apiUrl } = await githubGet(FILE_PATH);
+        const tokenList = data.map(d => typeof d === "string" ? d : d.token);
+        const tokenHapus = tokenList[index];
+        if (!confirm("Yakin hapus nomer " + (index + 1) + "?\n\n" + tokenHapus)) return;
+        
+        status.innerText = "⏳ Lagi ngehapus...";
+        const baru = tokenList.filter((_, i) => i !== index);
+        const ok = await githubSave(baru, sha, apiUrl, "Del token by " + passwordSaya);
+        
+        if (ok) {
+            status.innerText = "✅ Dihapus. Sisa: " + baru.length;
+            renderList(baru);
+            await kirimNotifTelegram(`🗑️ *TOKEN DIHAPUS*\n\nToken: \`${tokenHapus}\`\nSisa: ${baru.length}`);
+        } else status.innerText = "❌ Gagal hapus.";
+    }
+
+    function renderList(data) {
+        const wrap = document.getElementById("listToken");
+        const list = data.map(d => typeof d === "string" ? d : d.token);
+        if (!list.length) { wrap.innerHTML = ""; return; }
+        
+        wrap.innerHTML = `<p style="font-size:11px;color:var(--text-muted);text-align:left;margin-top:15px;font-weight:bold;">Total: ${list.length} token</p>` +
+        list.map((t, i) => `<div class="token-item"><div class="num">${i + 1}</div><span>${t}</span><button class="btn-small" onclick="delTokenByIndex(${i})">DEL</button></div>`).join("");
+    }
+
+    async function lihatToken() {
+        const status = document.getElementById("status");
+        status.innerText = "⏳ Lagi ngambil list...";
+        try {
+            const { data } = await githubGet(FILE_PATH);
+            status.innerText = "📋 Total: " + data.length + " token";
+            renderList(data);
+        } catch(e) { status.innerText = "❌ Gagal ambil token."; }
+    }
+</script>
+</body>
+</html>
